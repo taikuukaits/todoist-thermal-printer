@@ -10,4 +10,6 @@ This runs on an Adafruit printer and communicates with Todoist to print out your
 
 You will need to update config.json with your Todoist API Token.
 
-This is typically deplayed by SSHing into the PI and copying over the files. A cron job can be setup to automatically start the script. The script by default is set to safely shutdown the pi on a long press so the SD card isn't as likely to be corrupted.
+This is typically deployed by SSHing into the PI and copying over the files using scp. A cron job should be setup to automatically start the script. 
+
+The script by default is set to safely shutdown the pi on a long press to reduce the likelyhood of corrupting the SD card if you need to turn off the PI. Always safely shut down if possible.
