@@ -1,0 +1,27 @@
+{ 
+    "application":{
+        "welcome_image": "/home/pi/thermal-printer/JJ_Print/Python_Thermal_Printer/gfx/hello.png",
+        "goodbye_image": "/home/pi/thermal-printer/JJ_Print/Python_Thermal_Printer/gfx/goodbye.png"
+    },
+    "printer": {
+        "serial": "/dev/serial0",
+        "baud": 19200,
+        "timeout": 5
+    },
+    "led": {
+        "led_pin": 18
+    },
+    "button": {
+        "button_pin": 23,
+        "invert_pin": true,
+        "hold_time": 10,
+        "tap_time": 2,
+        "debounce_time": 0.02
+    },
+    "todoist": {
+        "token": "<REDACTED>",
+        "refresh_time": 600,
+        "morning_image": "/home/pi/thermal-printer/JJ_Print/Python_Thermal_Printer/gfx/coffee.png"
+
+    }
+}
