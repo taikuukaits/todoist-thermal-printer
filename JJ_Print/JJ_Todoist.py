@@ -1,8 +1,7 @@
-import todoist
 from datetime import datetime, date, timedelta
 from JJ_Print.JJ_Todoist_Config import JJ_Todoist_Config
-from PIL import Image
 from pytz import timezone
+import requests
 
 class JJ_Todo_Data:
     def __init__(self, projects, completed_yesterday):
@@ -19,38 +18,40 @@ class JJ_Todo_Task:
         self.task_title = title
 
 class JJ_TodoistApi:
-    def __init__(self, api):
-        self.api = api
+    def __init__(self, token):
+        self.token = token
+
 
     def calculate(self, today, yesterday):
-        projects = []
+        
         completed_yesterday = 0
 
-        for project in self.api.state['projects']:
+        tasks_request = requests.get(
+            "https://api.todoist.com/api/v1/tasks/filter?query=today%7Coverdue",
+            headers={"Authorization": "Bearer " + self.token},
+            params={"filter": "today%7Coverdue"},
+        )
+        tasks_request.raise_for_status()
+        tasks_data = tasks_request.json()
 
-            project_tasks_raw = [task for task in self.api.state['items'] if project['id'] == task['project_id']]
-            project_tasks_current = [task for task in project_tasks_raw if task['in_history'] == 0]
-            project_tasks_completed = [task for task in project_tasks_raw if task['date_completed'] != None]
-            project_tasks_completed_yesterday = [task for task in project_tasks_completed if task['date_completed'].startswith(yesterday)]
-            print(str(project_tasks_completed_yesterday))
-            completed_yesterday = completed_yesterday + len(project_tasks_completed_yesterday)
+        projects_request = requests.get(
+            "https://api.todoist.com/api/v1/projects",
+            headers={"Authorization": "Bearer " + self.token},
+        )
+        projects_request.raise_for_status()
+        projects_data = projects_request.json()
 
-            project_tasks_sorted = sorted(project_tasks_current, key=lambda task: task['child_order'])
+        jj_projects = []
+        for project in projects_data["results"]:
+            found_tasks = []
+            for task in tasks_data["results"]:
+                if task["project_id"] == project["id"]:
+                    found_tasks.append(JJ_Todo_Task(task["content"]))
 
-            project_tasks = []
-            for task in project_tasks_sorted:
-                if task['due'] != None:
-                    due_dict = task['due']
-                    if due_dict['date'].startswith(today):
-                        project_tasks.append(JJ_Todo_Task(task['content']))
-                if task['date_completed'] != None:
-                    if task['date_completed'].startswith(yesterday):
-                        completed_yesterday = completed_yesterday + 1
+            if len(found_tasks) > 0:
+                jj_projects.append(JJ_Todo_Project(project["name"], found_tasks))
 
-            if len(project_tasks) > 0:
-                projects.append(JJ_Todo_Project(project['name'], project_tasks))
-
-        return JJ_Todo_Data(projects, completed_yesterday)
+        return JJ_Todo_Data(jj_projects, completed_yesterday)
 
 
 
@@ -61,10 +62,9 @@ class JJ_Todoist:
         self.refresh_time = todoist_config.refresh_time
         self.current_refresh_time = self.refresh_time
         self.printer = printer
-        self.api  = todoist.TodoistAPI(self.token)
         self.last_date = ""
         self.days = 0
-        self.calculator = JJ_TodoistApi(self.api)
+        self.calculator = JJ_TodoistApi(self.token)
         print("Will refresh every: " + str(self.refresh_time))
 
     def tick(self, time):
@@ -93,17 +93,13 @@ class JJ_Todoist:
         yesterday = yesterday_date.strftime("%Y-%m-%d")
 
         self.last_date = today
-        self.api.sync()
 
         data = self.calculator.calculate(today, yesterday)
 
         self.printer.println("Good Morning!")
-        self.printer.printImage(Image.open(self.morning_image), False)
         self.printer.println("Today is " + self.last_date + ".")
         self.printer.println("")
         self.printer.println(str(self.days) + " Day(s) Without Incident")
-        self.printer.println("")
-        self.printer.println(str(data.completed_yesterday) + " Completed Yesterday")
 
         for project in data.project_list:
             if len(project.tasks) > 0:

@@ -13,3 +13,15 @@ You will need to update config.json with your Todoist API Token.
 This is typically deployed by SSHing into the PI and copying over the files using scp. A cron job should be setup to automatically start the script. 
 
 The script by default is set to safely shutdown the pi on a long press to reduce the likelyhood of corrupting the SD card if you need to turn off the PI. Always safely shut down if possible.
+
+```
+pip install todoist-api-python
+```
+
+
+# UGH the goddamn deploy: 
+
+Step 1: Start PI and get IP from printer.
+Step 2: ssh pi@192.168.1.XXX
+Step 3: get password from lastpass (in the notes) for pi@iotpiprinter
+Step 4: run ./deploy.sh (and pretty much just ignore warnings/errors and input password when prompted (need to make it more resilient))
