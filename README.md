@@ -19,9 +19,7 @@ pip install todoist-api-python
 ```
 
 
-# UGH the goddamn deploy: 
+# Current deploy: 
 
 Step 1: Start PI and get IP from printer.
-Step 2: ssh pi@192.168.1.XXX
-Step 3: get password from lastpass (in the notes) for pi@iotpiprinter
-Step 4: run ./deploy.sh (and pretty much just ignore warnings/errors and input password when prompted (need to make it more resilient))
+Step 2: run ./deploy.sh (and pretty much just ignore warnings/errors and input password when prompted)
